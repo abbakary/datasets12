@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -54,6 +54,7 @@ export default function DatasetsPage() {
   const [appliedFilters, setAppliedFilters] = useState({ ...filters });
   const [loadedCount, setLoadedCount] = useState(12); // Number of datasets initially loaded
   const itemsPerLoad = 12; // Number of datasets to load per "Load more" click
+  const loadMoreRef = useRef(null); // Reference for Intersection Observer
 
   const recentQueries = [
     "Social Media Impact on Teen Mental Health",
@@ -197,6 +198,33 @@ export default function DatasetsPage() {
   useEffect(() => {
     setLoadedCount(itemsPerLoad);
   }, [search, selectedCategory, sortBy, appliedFilters]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // When the load more button comes into view, automatically load more
+        if (entries[0].isIntersecting && loadedCount < filteredDatasets.length) {
+          setLoadedCount((prev) => prev + itemsPerLoad);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px", // Start loading 100px before element comes into view
+        threshold: 0.1,
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadedCount, filteredDatasets.length]);
 
   const handleLoadMore = () => {
     setLoadedCount((prev) => prev + itemsPerLoad);
@@ -868,6 +896,7 @@ export default function DatasetsPage() {
               {/* Load More Button */}
               {filteredDatasets.length > loadedCount && (
                 <Box
+                  ref={loadMoreRef}
                   sx={{
                     display: "flex",
                     justifyContent: "center",

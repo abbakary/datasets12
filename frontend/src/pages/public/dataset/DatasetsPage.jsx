@@ -199,33 +199,6 @@ export default function DatasetsPage() {
     setLoadedCount(itemsPerLoad);
   }, [search, selectedCategory, sortBy, appliedFilters]);
 
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // When the load more button comes into view, automatically load more
-        if (entries[0].isIntersecting && loadedCount < filteredDatasets.length) {
-          setLoadedCount((prev) => prev + itemsPerLoad);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "100px", // Start loading 100px before element comes into view
-        threshold: 0.1,
-      }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
-    };
-  }, [loadedCount, filteredDatasets.length]);
-
   const handleLoadMore = () => {
     setLoadedCount((prev) => prev + itemsPerLoad);
   };
@@ -297,6 +270,33 @@ export default function DatasetsPage() {
           return heatB - heatA;
       }
     });
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // When the load more button comes into view, automatically load more
+        if (entries[0].isIntersecting && loadedCount < filteredDatasets.length) {
+          setLoadedCount((prev) => prev + itemsPerLoad);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px", // Start loading 100px before element comes into view
+        threshold: 0.1,
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadedCount, filteredDatasets.length]);
 
   return (
     <PageLayout>
